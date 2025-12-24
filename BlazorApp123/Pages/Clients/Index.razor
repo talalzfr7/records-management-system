@@ -1,0 +1,124 @@
+﻿@page "/Clients"
+@using BlazorApp123.Models
+@using BlazorApp123.Components
+@using DocumentFormat.OpenXml
+@using DocumentFormat.OpenXml.Packaging
+@using DocumentFormat.OpenXml.Spreadsheet
+@using DocumentFormat.OpenXml.Wordprocessing
+@inject HttpClient Http
+@inject IJSRuntime js
+
+<HeadContent>
+    <script type="text/javascript" src="js/download.js"></script>
+</HeadContent>
+
+<style>
+    .button-container {
+        display: flex;
+        justify-content: space-between; /* Space between the two sections */
+        align-items: center; /* Vertically center the items */
+    }
+
+    .left-buttons, .right-buttons {
+        display: flex; /* This will allow the buttons to be in a row */
+        gap: 10px; /* Adds space between the buttons */
+    }
+
+    .right-buttons {
+        margin-left: auto; /* Pushes the right buttons to the far right */
+    }
+</style>
+
+
+<h1 class="text-center mb-3">List of Clients</h1>
+
+<div class="button-container">
+    <div class="left-buttons">
+        <a class="btn btn-primary btn-sm" href="/Clients/Create">Add Client</a>
+        <button class="btn btn-dark btn-sm" @onclick="Print">Print</button>
+    </div>
+    <div class="right-buttons">
+        <button class="btn btn-danger btn-sm" @onclick="ExportToPdf">Export to PDF</button>
+        <button class="btn btn-success btn-sm" @onclick="ExportToExcel">Export to Excel</button>
+        <button class="btn btn-primary btn-sm" @onclick="ExportToWord">Export to Word</button>
+    </div>
+</div>
+
+
+
+@if (clients == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div id="tableData">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Phone</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var client in clients)
+                {
+                    <tr>
+                        <td>@client.ID</td>
+                        <td>@client.Name</td>
+                        <td>@client.Department</td>
+                        <td>@client.Phone</td>
+                        <td style="white-space:nowrap">
+                            <a class="btn btn-primary btn-sm" href="/Clients/Edit/@client.ID">Edit</a>
+                            <a class="btn btn-danger btn-sm" href="/Clients/Delete/@client.ID">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<ExcelExport @ref="excelExportComponent" Clients="clients" />
+<WordExport @ref="wordExportComponent" Clients="clients" />
+<PdfExport @ref="pdfExportComponent" Clients="clients" />
+
+@code {
+    private List<Client>? clients;
+
+    private ExcelExport? excelExportComponent;
+    private WordExport? wordExportComponent;
+    private PdfExport? pdfExportComponent;
+
+    protected override async Task OnInitializedAsync()
+    {
+        clients = await Http.GetFromJsonAsync<List<Client>>("https://localhost:7234/api/Clients");
+    }
+
+    private async Task ExportToExcel()
+    {
+        await excelExportComponent.ExportToExcel();
+    }
+
+    private async Task ExportToWord()
+    {
+        await wordExportComponent.ExportToWord();
+    }
+
+    private async Task ExportToPdf()
+    {
+        // var pdfComponent = new ExportToPdf { Clients = clients };
+        await pdfExportComponent.ExportToPdf();
+    }
+
+    private async Task Print()
+    {
+        await js.InvokeVoidAsync("printData");
+    }
+
+
+
+}

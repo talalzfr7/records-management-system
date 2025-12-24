@@ -1,0 +1,67 @@
+﻿@page "/Clients/Create"
+@using BlazorApp123.Models
+@inject HttpClient http
+@inject NavigationManager navManager
+
+
+<div class="row"> 
+    <div class="col-lg-8">
+        <h1 class="mb-5">Add Client</h1>
+
+        <div class="row mb-3">
+            <label class="col-md-4 col-form-label">Name</label>
+            <div class="col-md-8">
+                <input class="form-control" @bind="ClientData.Name" />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <label class="col-md-4 col-form-label">Department</label>
+            <div class="col-md-8">
+                <input class="form-control" @bind="ClientData.Department" />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <label class="col-md-4 col-form-label">Phone</label>
+            <div class="col-md-8">
+                <input class="form-control" @bind="ClientData.Phone" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="offset-md-4 col-md-4 d-grid">
+                <button class="btn btn-primary" @onclick="SaveClient">Submit</button>
+            </div>
+            <div class="col-md-4 d-grid">
+                <a class="btn btn-outline-primary" href="/Clients">Cancel</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br>
+
+@code {
+    public ClientDto ClientData { set; get; } = new();
+
+    protected async Task SaveClient()
+    {   
+        var response = await http.PostAsJsonAsync("https://localhost:7234/api/Clients", ClientData);
+
+        if (response.IsSuccessStatusCode)
+        {
+            navManager.NavigateTo("/Clients");
+        }
+
+        else
+        {
+            var strResponse = await response.Content.ReadAsStringAsync();
+            Console.WriteLine("Json Response: \n" + strResponse);
+
+        }
+
+    }
+
+
+}

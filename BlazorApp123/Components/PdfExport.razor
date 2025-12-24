@@ -1,0 +1,82 @@
+﻿@using BlazorApp123.Models
+@using iText.Kernel.Pdf
+@using iText.Layout
+@using iText.Layout.Element
+@using iText.Layout.Properties
+@inject IJSRuntime JSRuntime
+
+@code {
+    [Parameter]
+
+    public List<Client> Clients { get; set; }
+
+    public async Task ExportToPdf()
+
+    {
+
+        using var memoryStream = new MemoryStream();
+
+        using (var pdfWriter = new PdfWriter(memoryStream))
+
+        using (var pdfDocument = new PdfDocument(pdfWriter))
+
+        {
+
+            var document = new Document(pdfDocument);
+
+            document.Add(new Paragraph("List of Clients").SetTextAlignment(TextAlignment.CENTER).SetBold());
+
+
+
+            // Create a table with the specified number of columns
+
+            var table = new Table(4); // 4 columns
+
+
+
+            // Add table headers
+
+            table.AddHeaderCell("ID");
+
+            table.AddHeaderCell("Name");
+
+            table.AddHeaderCell("Department");
+
+            table.AddHeaderCell("Phone");
+
+
+
+            // Add rows to the table
+
+            foreach (var client in Clients)
+
+            {
+
+                table.AddCell(client.ID.ToString());
+
+                table.AddCell(client.Name);
+
+                table.AddCell(client.Department);
+
+                table.AddCell(client.Phone);
+
+            }
+
+
+
+            document.Add(table);
+
+            document.Close();
+
+        }
+
+
+
+        var fileName = "Clients.pdf";
+
+        var fileBytes = memoryStream.ToArray();
+
+        await JSRuntime.InvokeVoidAsync("downloadFile", fileName, Convert.ToBase64String(fileBytes));
+
+    }
+}

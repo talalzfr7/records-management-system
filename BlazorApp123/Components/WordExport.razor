@@ -1,0 +1,75 @@
+﻿@using BlazorApp123.Models
+@using DocumentFormat.OpenXml;
+@using DocumentFormat.OpenXml.Packaging
+@using DocumentFormat.OpenXml.Wordprocessing
+@inject IJSRuntime js
+
+@code {
+
+    [Parameter]
+
+    public List<Client>? Clients { get; set; }
+
+
+    public async Task ExportToWord()
+    {
+        using var memoryStream = new MemoryStream();
+
+        using (var wordDocument = WordprocessingDocument.Create(memoryStream, WordprocessingDocumentType.Document))
+
+        {
+            var mainPart = wordDocument.AddMainDocumentPart();
+
+            mainPart.Document = new Document();
+
+            var body = new Body();
+
+
+            var table = new Table();
+
+            var headerRow = new TableRow();
+
+            headerRow.Append(new TableCell(new Paragraph(new Run(new Text("ID")))));
+
+            headerRow.Append(new TableCell(new Paragraph(new Run(new Text("Name")))));
+
+            headerRow.Append(new TableCell(new Paragraph(new Run(new Text("Department")))));
+
+            headerRow.Append(new TableCell(new Paragraph(new Run(new Text("Phone")))));
+
+            table.Append(headerRow);
+
+            foreach (var client in Clients)
+
+            {
+
+                var dataRow = new TableRow();
+
+                dataRow.Append(new TableCell(new Paragraph(new Run(new Text(client.ID.ToString())))));
+
+                dataRow.Append(new TableCell(new Paragraph(new Run(new Text(client.Name)))));
+
+                dataRow.Append(new TableCell(new Paragraph(new Run(new Text(client.Department)))));
+
+                dataRow.Append(new TableCell(new Paragraph(new Run(new Text(client.Phone)))));
+
+                table.Append(dataRow);
+
+            }
+
+            body.Append(table);
+
+            mainPart.Document.Append(body);
+
+            mainPart.Document.Save();
+
+        }
+
+        var fileName = "Clients.docx";
+
+        var fileBytes = memoryStream.ToArray();
+
+        await js.InvokeVoidAsync("downloadFile", fileName, Convert.ToBase64String(fileBytes));
+
+    }
+}
