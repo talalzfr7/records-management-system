@@ -21,7 +21,6 @@ The application allows users to create, view, update, delete, and export records
 ### Backend API
 - REST API with controller-based endpoints  
 - DTO-based request and response models  
-- Input validation and structured error handling  
 - Entity Framework Core integration with SQL Server  
 - Code-first database migrations  
 
